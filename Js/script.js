@@ -3,7 +3,7 @@ let play = document.querySelector("#play")
 let next = document.querySelector("#next")
 let previous = document.querySelector("#previous")
 let currentSong = new Audio;
-let songs;
+let songs; 
 let length;
 let currFolder;
 
@@ -29,7 +29,7 @@ function formatSeconds(seconds) {
 
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`http://127.0.0.1:3000/Spotify/${currFolder}/`)
+    let a = await fetch(`/Spotify/${currFolder}/`)
     let response = await a.text();
     // console.log(response);
     let div = document.createElement("div")
@@ -100,7 +100,9 @@ const playMusic = (track, pause = false) => {
 
 
 async function displayAlbums() {
-    let a = await fetch(`http://127.0.0.1:3000/Spotify/songs/`)
+    let a = await fetch(`/songs/`)
+    console.log(a);
+    
     let response = await a.text();
     // console.log(response);
     let div = document.createElement("div")
@@ -114,7 +116,7 @@ async function displayAlbums() {
         if (e.href.includes("/songs") && !e.href.includes("htaccess")) {
             let folder = e.href.split("/").slice(-2)[0];
             //Get The Meta Data of the folder
-            let a = await fetch(`http://127.0.0.1:3000/Spotify/songs/${folder}/info.json`)
+            let a = await fetch(`/songs/${folder}/info.json`)
             let response = await a.json();
             // console.log(response);
             cardContainer.innerHTML = cardContainer.innerHTML + `<div data-folder="${folder}" class="card">
@@ -126,7 +128,7 @@ async function displayAlbums() {
                             <!-- Play Button -->
                             <polygon points="35,30 35,70 75,50" fill="#000000" />
                         </svg>
-                        <img src="/Spotify/songs/${folder}/cover.jfif" alt="">
+                        <img src="/songs/${folder}/cover.jfif" alt="">
                         <h3></h3>
                         <p>${response.description}</p>
                     </div>`
@@ -137,26 +139,79 @@ async function displayAlbums() {
     Array.from(document.getElementsByClassName("card")).forEach(e => {
         e.addEventListener("click", async item => {
             // console.log(item, item.currentTarget);
+            
             songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`);
-playMusic(songs[0])
+            playMusic(songs[0])
         })
+
     })
+    // document.getElementsByClassName("playButton")[0].addEventListener("click",(e)=>{
+    //     console.log(e);
+        
+    // })
+
 }
 
+//Right For the playbutton will see it later
+// async function displayAlbums() {
+//     let a = await fetch(`http://127.0.0.1:3000/Spotify/songs/`);
+//     let response = await a.text();
+//     let div = document.createElement("div");
+//     div.innerHTML = response;
+//     let anchors = div.getElementsByTagName("a");
+//     let cardContainer = document.querySelector(".cardContainer");
+//     let array = Array.from(anchors);
+    
+//     for (let index = 0; index < array.length; index++) {
+//         const e = array[index];
 
+//         if (e.href.includes("/songs") && !e.href.includes("htaccess")) {
+//             let folder = e.href.split("/").slice(-2)[0];
+//             let a = await fetch(`http://127.0.0.1:3000/Spotify/songs/${folder}/info.json`);
+//             let response = await a.json();
+//             cardContainer.innerHTML += `<div data-folder="${folder}" class="card">
+//                         <svg class="playButton" width="50" height="50" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+//                             <circle cx="50" cy="50" r="50" fill="#1DB954" />
+//                             <polygon points="35,30 35,70 75,50" fill="#000000" />
+//                         </svg>
+//                         <img src="/Spotify/songs/${folder}/cover.jfif" alt="">
+//                         <h3></h3>
+//                         <p>${response.description}</p>
+//                     </div>`;
+//         }
+//     }
+
+//     // Load the Playlist when the card is clicked
+//     Array.from(document.getElementsByClassName("card")).forEach(e => {
+//         e.addEventListener("click", async item => {
+//             songs = await getSongs(`songs/${item.currentTarget.dataset.folder}`);
+//             playMusic(songs[0]);
+//         });
+
+//         // Add event listener for the play button inside each card
+//         const playButton = e.querySelector(".playButton");
+//         playButton.addEventListener("click", async (event) => {
+//             event.stopPropagation(); // Prevent triggering the card click event
+//             songs = await getSongs(`songs/${e.dataset.folder}`);
+//             playMusic(songs[0]);
+//         });
+//     });
+// }
 
 
 
 async function main() {
 
-    //Get the list of all songs
-    await getSongs("songs/cs");
-    // console.log(songs);
-
-    playMusic(songs[0], true)
-
     //Display All The albums on the page 
     displayAlbums()
+
+    //Get the list of all songs
+    // await getSongs("songs/cs");
+    // console.log(songs);
+
+    // playMusic(songs[0], true)
+
+
 
     //Attach an event Listener to each song
     play.addEventListener("click", () => {
@@ -193,7 +248,8 @@ async function main() {
         document.querySelector(".left").style.left = "-100%";
     })
 
-    length = songs.length;
+
+
 
     //Adding an event for previous
     previous.addEventListener("click", () => {
@@ -212,7 +268,7 @@ async function main() {
     //Adding an event for next
     next.addEventListener("click", () => {
         console.log("Next Clicked");
-
+        length = songs.length;
         let index = songs.indexOf(currentSong.src.split("/").slice(-1)[0])
 
         if ((index + 1) < length) {
@@ -228,28 +284,28 @@ async function main() {
     document.querySelector(".range").getElementsByTagName("input")[0].addEventListener("change", (e) => {
         // console.log("Setting volume to ", e.target.value, "/100");
         currentSong.volume = (e.target.value) / 100
-        if(currentSong.volume >0){
-            document.querySelector(".volume img").src = document.querySelector(".volume img").src.replace("mute.svg" , "volume.svg")
+        if (currentSong.volume > 0) {
+            document.querySelector(".volume img").src = document.querySelector(".volume img").src.replace("mute.svg", "volume.svg")
         }
     })
 
     //Adding an event to mute the volume 
-    document.querySelector(".volume img").addEventListener("click", (e)=>{
+    document.querySelector(".volume img").addEventListener("click", (e) => {
         console.log(e.target);
-        if(e.target.src.includes("volume.svg")){
-            e.target.src = e.target.src.replace("volume.svg" , "mute.svg")
+        if (e.target.src.includes("volume.svg")) {
+            e.target.src = e.target.src.replace("volume.svg", "mute.svg")
             // console.log(e.target.src);
             document.querySelector(".range").getElementsByTagName("input")[0].value = 0
-            currentSong.volume=0; 
+            currentSong.volume = 0;
         }
-        else{
-            e.target.src = e.target.src.replace("mute.svg" , "volume.svg")
+        else {
+            e.target.src = e.target.src.replace("mute.svg", "volume.svg")
             // console.log(e.target.src);  
-            currentSong.volume=0.1; 
+            currentSong.volume = 0.1;
             document.querySelector(".range").getElementsByTagName("input")[0].value = 10
         }
     })
-    
-}
+
+} 
 
 main()
